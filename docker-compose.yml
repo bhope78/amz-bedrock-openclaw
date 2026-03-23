@@ -47,7 +47,7 @@ services:
       - openclaw-net
     mem_limit: 1g
     healthcheck:
-      test: ["CMD", "curl", "-f", "http://localhost:3456/"]
+      test: ["CMD-SHELL", "node -e \"fetch('http://localhost:3456/').then(r=>{if(!r.ok)process.exit(1)}).catch(()=>process.exit(1))\""]
       interval: 30s
       timeout: 10s
       retries: 3
