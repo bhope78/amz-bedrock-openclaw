@@ -1,0 +1,51 @@
+{
+  models: {
+    bedrockDiscovery: {
+      enabled: true,
+      region: "us-east-1",
+      providerFilter: ["anthropic"],
+      refreshInterval: 3600,
+      defaultContextWindow: 200000,
+      defaultMaxTokens: 8192,
+    },
+    providers: {
+      "amazon-bedrock": {
+        baseUrl: "https://bedrock-runtime.us-east-1.amazonaws.com",
+        api: "bedrock-converse-stream",
+        auth: "aws-sdk",
+        models: [
+          {
+            id: "us.anthropic.claude-sonnet-4-6",
+            name: "Claude Sonnet 4.6 (Bedrock)",
+            reasoning: true,
+            input: ["text", "image"],
+            contextWindow: 200000,
+            maxTokens: 8192,
+          },
+          {
+            id: "us.anthropic.claude-haiku-4-5-20251001-v1:0",
+            name: "Claude Haiku 4.5 (Bedrock)",
+            input: ["text", "image"],
+            contextWindow: 200000,
+            maxTokens: 8192,
+          },
+          {
+            id: "us.anthropic.claude-opus-4-20250514-v1:0",
+            name: "Claude Opus 4 (Bedrock)",
+            reasoning: true,
+            input: ["text", "image"],
+            contextWindow: 200000,
+            maxTokens: 8192,
+          },
+        ],
+      },
+    },
+  },
+  agents: {
+    defaults: {
+      model: {
+        primary: "amazon-bedrock/us.anthropic.claude-sonnet-4-6",
+      },
+    },
+  },
+}
