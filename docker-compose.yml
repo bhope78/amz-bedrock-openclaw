@@ -10,6 +10,8 @@ services:
       - "3100:3000"
     env_file:
       - .env
+    environment:
+      - FEEDBACK_API_URL=http://career-api:3456
     volumes:
       - openclaw-data:/app/data
       - ./config:/app/config
@@ -24,9 +26,36 @@ services:
       timeout: 10s
       retries: 3
       start_period: 30s
+    depends_on:
+      career-api:
+        condition: service_healthy
+
+  career-api:
+    build:
+      context: ./feedback-api
+      dockerfile: Dockerfile
+    container_name: career-api
+    restart: unless-stopped
+    ports:
+      - "3456:3456"
+    volumes:
+      - feedback-data:/app/data
+    environment:
+      - FEEDBACK_DB_PATH=/app/data/feedback.db
+      - FEEDBACK_API_PORT=3456
+    networks:
+      - openclaw-net
+    mem_limit: 1g
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:3456/"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 15s
 
 volumes:
   openclaw-data:
+  feedback-data:
 
 networks:
   openclaw-net:
