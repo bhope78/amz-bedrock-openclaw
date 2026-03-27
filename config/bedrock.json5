@@ -46,6 +46,57 @@
       model: {
         primary: "amazon-bedrock/us.anthropic.claude-sonnet-4-6",
       },
+      heartbeat: {
+        every: "30m",
+        isolatedSession: true,
+        lightContext: true,
+        showOk: false,
+        showAlerts: true,
+      },
     },
+  },
+  cron: {
+    jobs: [
+      {
+        name: "calcareers-scan",
+        schedule: { kind: "cron", expr: "0 8 * * *", tz: "America/Los_Angeles" },
+        payload: {
+          kind: "agentTurn",
+          message: "Run the CalCareers scan loop from HEARTBEAT.md. Search for new jobs matching my preferences in SOUL.md, apply exclusions, score and rank matches, and present any new matches to Bryan on Telegram. If no new matches, stay silent.",
+        },
+        delivery: { channel: "telegram" },
+        session: "isolated",
+      },
+      {
+        name: "governmentjobs-scan",
+        schedule: { kind: "cron", expr: "30 8 * * *", tz: "America/Los_Angeles" },
+        payload: {
+          kind: "agentTurn",
+          message: "Run the GovernmentJobs.com scan loop from HEARTBEAT.md. Search for new IT, procurement, and facilities jobs matching my preferences in SOUL.md, apply exclusions, and present any new matches to Bryan on Telegram. If no new matches, stay silent.",
+        },
+        delivery: { channel: "telegram" },
+        session: "isolated",
+      },
+      {
+        name: "deadline-alerts",
+        schedule: { kind: "cron", expr: "0 7 * * *", tz: "America/Los_Angeles" },
+        payload: {
+          kind: "agentTurn",
+          message: "Check Bryan's apply list for filing deadlines within the next 3 days. Send Telegram alerts for any upcoming or same-day deadlines. If nothing is due soon, stay silent.",
+        },
+        delivery: { channel: "telegram" },
+        session: "isolated",
+      },
+      {
+        name: "weekly-digest",
+        schedule: { kind: "cron", expr: "0 9 * * 0", tz: "America/Los_Angeles" },
+        payload: {
+          kind: "agentTurn",
+          message: "Generate the weekly job report digest from HEARTBEAT.md. Summarize new matches, pending applications, upcoming deadlines, feedback stats, and top skip reasons. Send to Bryan on Telegram.",
+        },
+        delivery: { channel: "telegram" },
+        session: "isolated",
+      },
+    ],
   },
 }
