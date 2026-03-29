@@ -12,6 +12,8 @@ services:
       - .env
     environment:
       - FEEDBACK_API_URL=http://career-api:3456
+      - DOC_GENERATOR_URL=http://doc-generator:3457
+      - VOICE_TRANSCRIBER_URL=http://voice-transcriber:3458
     volumes:
       - openclaw-data:/app/data
       - ./config:/app/config
@@ -31,6 +33,30 @@ services:
     depends_on:
       career-api:
         condition: service_healthy
+      doc-generator:
+        condition: service_healthy
+      voice-transcriber:
+        condition: service_healthy
+
+  voice-transcriber:
+    build:
+      context: ./voice-transcriber
+      dockerfile: Dockerfile
+    container_name: voice-transcriber
+    restart: unless-stopped
+    environment:
+      - VOICE_TRANSCRIBER_PORT=3458
+      - TELEGRAM_BOT_TOKEN=${TELEGRAM_BOT_TOKEN}
+      - GROQ_API_KEY=${GROQ_API_KEY}
+    networks:
+      - openclaw-net
+    mem_limit: 256m
+    healthcheck:
+      test: ["CMD-SHELL", "node -e \"fetch('http://localhost:3458/health').then(r=>{if(!r.ok)process.exit(1)}).catch(()=>process.exit(1))\""]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 10s
 
   career-api:
     build:
@@ -45,6 +71,9 @@ services:
     environment:
       - FEEDBACK_DB_PATH=/app/data/feedback.db
       - FEEDBACK_API_PORT=3456
+      - CLOUDFLARE_API_TOKEN=${CLOUDFLARE_API_TOKEN}
+      - CLOUDFLARE_ACCOUNT_ID=${CLOUDFLARE_ACCOUNT_ID}
+      - D1_DATABASE_ID=${D1_DATABASE_ID}
     networks:
       - openclaw-net
     mem_limit: 1g
@@ -55,9 +84,36 @@ services:
       retries: 3
       start_period: 15s
 
+  doc-generator:
+    build:
+      context: ./doc-generator
+      dockerfile: Dockerfile
+    container_name: doc-generator
+    restart: unless-stopped
+    ports:
+      - "3457:3457"
+    environment:
+      - DOC_GENERATOR_PORT=3457
+      - CLOUDFLARE_API_TOKEN=${CLOUDFLARE_API_TOKEN}
+      - CLOUDFLARE_ACCOUNT_ID=${CLOUDFLARE_ACCOUNT_ID}
+      - NODE_ENV=production
+      - TELEGRAM_BOT_TOKEN=${TELEGRAM_BOT_TOKEN}
+    volumes:
+      - doc-output:/app/output
+    networks:
+      - openclaw-net
+    mem_limit: 2g
+    healthcheck:
+      test: ["CMD-SHELL", "node -e \"fetch('http://localhost:3457/api/health').then(r=>{if(!r.ok)process.exit(1)}).catch(()=>process.exit(1))\""]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 30s
+
 volumes:
   openclaw-data:
   feedback-data:
+  doc-output:
 
 networks:
   openclaw-net:

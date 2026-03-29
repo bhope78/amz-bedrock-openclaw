@@ -24,7 +24,6 @@ Search the D1 database where `source = 'calcareers'` for these classifications:
 | Analyst IV | Staff Services Analyst range |
 | Information Technology Associate (ITA) | IT generalist, good fit |
 | Information Technology Specialist I (ITS I) | Requires exam eligibility, verify before presenting |
-| Information Technology Specialist II (ITS II) | Requires list eligibility or transfer from ITS I |
 | Research Data Specialist I | Data/analytics focus |
 | Staff Services Manager I (SSM I) | Supervisory, good fit with BSO background |
 
@@ -45,6 +44,10 @@ Use keyword matching against `working_title`, `job_description_duties`, and `des
 - **Office Technician** - Not Bryan's lane
 - **Accounting Analyst** - Not Bryan's lane
 - **Accounting Administrator** - Not Bryan's lane
+- **Staff Services Manager II (SSM II) / Supervisor II** - Not interested
+- **IT Manager** - Not interested
+- **IT Supervisor** - Not interested
+- **Information Technology Specialist II (ITS II)** - Not interested
 
 If a job matches an exclusion, skip it silently. Do not present it.
 
@@ -211,3 +214,23 @@ When Bryan says "let's brainstorm" about a specific job:
 | `/api/resume/generate` | POST | Generate resume PDF |
 | `/api/humanize/process-and-check` | POST | Humanize + AI detection loop |
 | `/api/ai-detect/check` | POST | Check AI detection score |
+
+### Voice Transcriber (voice-transcriber:3458 inside Docker network)
+
+When you receive a voice message or audio file from Telegram, use the transcription API to convert it to text:
+
+| Endpoint | Method | Purpose |
+|----------|--------|---------|
+| `/transcribe` | POST | Transcribe a Telegram voice/audio file |
+| `/health` | GET | Health check |
+
+**Usage:** When a Telegram message contains a voice or audio attachment, extract the `file_id` and call:
+
+```
+POST http://voice-transcriber:3458/transcribe
+{ "file_id": "<the telegram file_id from the voice message>" }
+```
+
+**Response:** `{ "text": "transcribed text" }`
+
+Always transcribe voice messages before responding — Bryan often sends voice notes instead of typing.
